@@ -3,7 +3,8 @@ import { CountdownContainer, FormContainer, HomeContainer, MinutesInput, Separat
 import { useForm } from 'react-hook-form'
 import { zodResolver} from '@hookform/resolvers/zod'
 import * as zod from 'zod'
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { differenceInSeconds } from 'date-fns'
 
 //validation schema
 const newCycleFormValidationSchema = zod.object({
@@ -18,7 +19,8 @@ type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>
 interface Cycle {
     id: string,
     task: string,
-    minutesAmount: number
+    minutesAmount: number,
+    startDate: Date,
 
 }
 
@@ -37,19 +39,38 @@ export function Home() {
         }
     })
 
+    const activeCycle = cycles.find(cycle => cycle.id === activeCycleId)
+
+    useEffect(() => {
+        let interval: number
+        if(activeCycle) {
+            interval = setInterval(() => {
+                setAmountSecondsPast(
+                    differenceInSeconds(new Date(), activeCycle.startDate)
+                )
+            }, 1000)
+        }
+        return () => {
+            clearInterval(interval)
+        }
+    }, [activeCycle])
+
     const handleCreateNewCycle = (data: NewCycleFormData) => {
         const newCycle: Cycle = {
             id: String(new Date().getTime()),
             task: data.task,
-            minutesAmount: data.minutesAmount
+            minutesAmount: data.minutesAmount,
+            startDate: new Date()
         }
 
         setCycles((state) => [ ...state, newCycle])
         setActiveCycleId(newCycle.id)
+
+        setAmountSecondsPast(0)
+
         reset()
     }
 
-    const activeCycle = cycles.find(cycle => cycle.id === activeCycleId)
 
     //if there is an acitve cycle runing, convert minutes to seconds
     const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
@@ -62,6 +83,12 @@ export function Home() {
 
     const minutes = String(minutesAmount).padStart(2, '0')
     const seconds = String(secondsAmount).padStart(2, '0')
+
+    useEffect(() => {
+        if(activeCycle) {
+            document.title = `${minutes}:${seconds}`
+        }
+    }, [minutes, seconds])
 
     const task = watch('task')
     const isSubmitDisabled = !task
