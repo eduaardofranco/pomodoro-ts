@@ -37,17 +37,23 @@ interface CyclesContextProviderProps {
     children: ReactNode
 }
 
+export enum ActionTypes {
+    ADD_NEW_CYCLE = 'ADD_NEW_CYCLE',
+    INTERRUPT_CURRENT_CYCLE = 'INTERRUPT_CURRENT_CYCLE',
+    MARK_CURRENT_CYCLE_AS_FINISHED = 'MARK_CURRENT_CYCLE_AS_FINISHED'
+}
+
 export function CyclesContextProvider({ children }: CyclesContextProviderProps) {
     
     const [cyclesState, dispatch] = useReducer((state: CyclesState, action: any) => {
         switch(action.type) {
-            case 'ADD_NEW_CYCLE':
+            case ActionTypes.ADD_NEW_CYCLE:
                 return {
                     ...state,
                     cycles: [...state.cycles, action.payload.newCycle],
                     activeCycleId: action.payload.newCycle.id,
                 }
-            case 'INTERRUPT_CURRENT_CYCLE':
+            case ActionTypes.INTERRUPT_CURRENT_CYCLE:
                 return {
                     ...state,
                     cycles: state.cycles.map((cycle) => {
@@ -59,7 +65,7 @@ export function CyclesContextProvider({ children }: CyclesContextProviderProps) 
                     }),
                     activeCycleId: null
                 }
-            case 'MARK_CURRENT_CYCLE_AS_FINISHED':
+            case ActionTypes.MARK_CURRENT_CYCLE_AS_FINISHED:
                 return {
                     ...state,
                     cycles: state.cycles.map((cycle) => {
@@ -92,7 +98,7 @@ export function CyclesContextProvider({ children }: CyclesContextProviderProps) 
     function markCurrentCycleAsFinished() {
 
         dispatch({
-            type: 'MARK_CURRENT_CYCLE_AS_FINISHED',
+            type: ActionTypes.MARK_CURRENT_CYCLE_AS_FINISHED,
             payload: {
                 activeCycleId
             },
@@ -112,7 +118,7 @@ export function CyclesContextProvider({ children }: CyclesContextProviderProps) 
         }
         
         dispatch({
-            type: 'ADD_NEW_CYCLE',
+            type: ActionTypes.ADD_NEW_CYCLE,
             payload: {
                 newCycle,
             },
@@ -125,7 +131,7 @@ export function CyclesContextProvider({ children }: CyclesContextProviderProps) 
     function interruptCurrentCycle() {
         
         dispatch({
-            type: 'INTERRUPT_CURRENT_CYCLE',
+            type: ActionTypes.INTERRUPT_CURRENT_CYCLE,
             payload: {
                 activeCycleId
             },
